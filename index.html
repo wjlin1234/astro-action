@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免費星盤個性輪廓｜阿杰博士</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & React DOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel for JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #0b0f1a;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    /* =========================================================
+       設定區
+       ========================================================= */
+    // 建立好 Apps Script 並部署後，把網址貼在這裡（取代這個空字串）
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzx8WNRRooDP6DB8ZY1Amh3pfrFtc1sfEsddLCagTSfZpJg7cDh2pEAXdeYq7MaRZ6N/exec';
+    // 漏斗不讓訪客選分宮制，固定用這個（跟後台工具的預設值一致）
+    const HOUSE_SYSTEM = 'Placidus';
+
+    /* =========================================================
+       常數資料（沿用原本排盤工具的星座表、相位表與城市庫）
+       ========================================================= */
+    const ZODIAC_SIGNS = [
+      { name: '牡羊座', symbol: '♈', element: '火', ruler: '火星', english: 'Aries' },
+      { name: '金牛座', symbol: '♉', element: '土', ruler: '金星', english: 'Taurus' },
+      { name: '雙子座', symbol: '♊', element: '風', ruler: '水星', english: 'Gemini' },
+      { name: '巨蟹座', symbol: '♋', element: '水', ruler: '月亮', english: 'Cancer' },
+      { name: '獅子座', symbol: '♌', element: '火', ruler: '太陽', english: 'Leo' },
+      { name: '處女座', symbol: '♍', element: '土', ruler: '水星', english: 'Virgo' },
+      { name: '天秤座', symbol: '♎', element: '風', ruler: '金星', english: 'Libra' },
+      { name: '天蠍座', symbol: '♏', element: '水', ruler: '冥王星', english: 'Scorpio' },
+      { name: '射手座', symbol: '♐', element: '火', ruler: '木星', english: 'Sagittarius' },
+      { name: '摩羯座', symbol: '♑', element: '土', ruler: '土星', english: 'Capricorn' },
+      { name: '水瓶座', symbol: '♒', element: '風', ruler: '天王星', english: 'Aquarius' },
+      { name: '雙魚座', symbol: '♓', element: '水', ruler: '海王星', english: 'Pisces' }
+    ];
+
+    const ASPECT_TYPES = [
+      { name: '合相', angle: 0, orb: 8, symbol: '☌' },
+      { name: '六分相', angle: 60, orb: 6, symbol: '⚹' },
+      { name: '四分相', angle: 90, orb: 7, symbol: '◻' },
+      { name: '三分相', angle: 120, orb: 8, symbol: '△' },
+      { name: '對分相', angle: 180, orb: 8, symbol: '☍' }
+    ];
+
+    const CITY_DATABASE = [
+      { id: 'hsinchu', name: 'Hsinchu', zhName: '新竹', country: 'Taiwan', lat: 24.8138, lng: 120.9675, tz: 8 },
+      { id: 'taipei', name: 'Taipei', zhName: '台北', country: 'Taiwan', lat: 25.0330, lng: 121.5654, tz: 8 },
+      { id: 'new_taipei', name: 'New Taipei', zhName: '新北', country: 'Taiwan', lat: 25.0117, lng: 121.4658, tz: 8 },
+      { id: 'taichung', name: 'Taichung', zhName: '台中', country: 'Taiwan', lat: 24.1477, lng: 120.6736, tz: 8 },
+      { id: 'tainan', name: 'Tainan', zhName: '台南', country: 'Taiwan', lat: 22.9997, lng: 120.2270, tz: 8 },
+      { id: 'kaohsiung', name: 'Kaohsiung', zhName: '高雄', country: 'Taiwan', lat: 22.6273, lng: 120.3014, tz: 8 },
+      { id: 'taoyuan', name: 'Taoyuan', zhName: '桃園', country: 'Taiwan', lat: 24.9936, lng: 121.3010, tz: 8 },
+      { id: 'keelung', name: 'Keelung', zhName: '基隆', country: 'Taiwan', lat: 25.1283, lng: 121.7419, tz: 8 },
+      { id: 'chiayi', name: 'Chiayi', zhName: '嘉義', country: 'Taiwan', lat: 23.4801, lng: 120.4491, tz: 8 },
+      { id: 'changhua', name: 'Changhua', zhName: '彰化', country: 'Taiwan', lat: 24.0815, lng: 120.5385, tz: 8 },
+      { id: 'pingtung', name: 'Pingtung', zhName: '屏東', country: 'Taiwan', lat: 22.6761, lng: 120.4883, tz: 8 },
+      { id: 'yilan', name: 'Yilan', zhName: '宜蘭', country: 'Taiwan', lat: 24.7570, lng: 121.7530, tz: 8 },
+      { id: 'hualien', name: 'Hualien', zhName: '花蓮', country: 'Taiwan', lat: 23.9871, lng: 121.6016, tz: 8 },
+      { id: 'taitung', name: 'Taitung', zhName: '台東', country: 'Taiwan', lat: 22.7583, lng: 121.1444, tz: 8 },
+      { id: 'hong_kong', name: 'Hong Kong', zhName: '香港', country: 'Hong Kong', lat: 22.3193, lng: 114.1694, tz: 8 },
+      { id: 'macau', name: 'Macau', zhName: '澳門', country: 'Macau', lat: 22.1987, lng: 113.5439, tz: 8 },
+      { id: 'tokyo', name: 'Tokyo', zhName: '東京', country: 'Japan', lat: 35.6762, lng: 139.6503, tz: 9 },
+      { id: 'osaka', name: 'Osaka', zhName: '大阪', country: 'Japan', lat: 34.6937, lng: 135.5023, tz: 9 },
+      { id: 'seoul', name: 'Seoul', zhName: '首爾', country: 'South Korea', lat: 37.5665, lng: 126.9780, tz: 9 },
+      { id: 'singapore', name: 'Singapore', zhName: '新加坡', country: 'Singapore', lat: 1.3521, lng: 103.8198, tz: 8 },
+      { id: 'beijing', name: 'Beijing', zhName: '北京', country: 'China', lat: 39.9042, lng: 116.4074, tz: 8 },
+      { id: 'shanghai', name: 'Shanghai', zhName: '上海', country: 'China', lat: 31.2304, lng: 121.4737, tz: 8 },
+      { id: 'london', name: 'London', zhName: '倫敦', country: 'United Kingdom', lat: 51.5074, lng: -0.1278, tz: 0 },
+      { id: 'paris', name: 'Paris', zhName: '巴黎', country: 'France', lat: 48.8566, lng: 2.3522, tz: 1 },
+      { id: 'new_york', name: 'New York', zhName: '紐約', country: 'United States', lat: 40.7128, lng: -74.0060, tz: -5 },
+      { id: 'los_angeles', name: 'Los Angeles', zhName: '洛杉磯', country: 'United States', lat: 34.0522, lng: -118.2437, tz: -8 },
+      { id: 'sydney', name: 'Sydney', zhName: '雪梨', country: 'Australia', lat: -33.8688, lng: 151.2093, tz: 10 }
+    ];
+
+    /* =========================================================
+       36 段個性文案（太陽 12 ＋ 月亮 12 ＋ 上升 12）
+       ========================================================= */
+    const PERSONALITY_SNIPPETS = {
+      sun: {
+        '牡羊座': '太陽落在牡羊座，你的核心動力來自「先做再說」。你天生具備開創的勇氣，遇到想做的事很少猶豫，比起長時間規劃，你更擅長在行動中修正方向。',
+        '金牛座': '太陽落在金牛座，你的核心動力來自穩定與踏實。你不追求一步登天，而是願意用時間累積出扎實的成果，這份耐性正是你最容易被低估、卻最值得信賴的資產。',
+        '雙子座': '太陽落在雙子座，你的核心動力來自學習與交流。你對新資訊反應快、上手也快，比起單一專精，你更擅長把不同領域的想法串連起來，變成別人想不到的組合。',
+        '巨蟹座': '太陽落在巨蟹座，你的核心動力來自照顧與連結。你天生對他人的處境感同身受，這份細膩讓你在需要信任感的事情上特別有優勢，也容易成為身邊人依靠的對象。',
+        '獅子座': '太陽落在獅子座，你的核心動力來自被看見與肯定。你天生有一種讓人願意注視的存在感，只要找到願意讓你發光的舞台，你的行動力會比自己想像的更持久。',
+        '處女座': '太陽落在處女座，你的核心動力來自把事情做到位。你對細節的敏感度不是龜毛，而是一種天賦，能把別人覺得瑣碎的地方，變成你最容易脫穎而出的專業感。',
+        '天秤座': '太陽落在天秤座，你的核心動力來自關係與平衡。你天生擅長換位思考，能在不同立場之間找到大家都能接受的方案，這種協調能力在需要合作的場合特別吃香。',
+        '天蠍座': '太陽落在天蠍座，你的核心動力來自深度投入。你不喜歡蜻蜓點水，一旦決定要做，就會一路挖到核心，這份專注力讓你在需要長期鑽研的事情上很有機會走得比別人遠。',
+        '射手座': '太陽落在射手座，你的核心動力來自探索與意義感。你天生對「為什麼要做這件事」很在意，只要找到讓你認同的方向，你的樂觀跟行動力會自然被點燃。',
+        '摩羯座': '太陽落在摩羯座，你的核心動力來自累積與自律。你不追求短期的熱鬧，而是願意一步步往長期目標邁進，這份務實，讓你往往在別人放棄之後還在持續前進。',
+        '水瓶座': '太陽落在水瓶座，你的核心動力來自獨立思考。你習慣用自己的邏輯理解世界，不容易被大多數人的想法牽著走，這份獨特視角，常常是你想出別人沒想到的解法的關鍵。',
+        '雙魚座': '太陽落在雙魚座，你的核心動力來自直覺與同理。你對氛圍跟情緒的感受力很強，這份細膩不只讓你容易理解別人，也常常在需要創意或感受力的事情上，給你意想不到的靈感。'
+      },
+      moon: {
+        '牡羊座': '月亮落在牡羊座，你的情緒來得快也去得快，比起悶著不說，你更需要用行動把情緒直接釋放出來——運動、動手做事，往往比想很多更有效。',
+        '金牛座': '月亮落在金牛座，你需要穩定的節奏才能感到安心。當生活步調被打亂時，回到熟悉的日常小習慣、給自己一點感官上的享受，是你重新找回平靜最快的方式。',
+        '雙子座': '月亮落在雙子座，你需要透過說話跟交流來整理情緒。悶著不說反而會讓你更焦躁，找個能聊的對象，把心裡的想法講出來，通常講著講著你自己就想通了。',
+        '巨蟹座': '月亮落在巨蟹座，你的情感很細膩，也很在意有沒有被理解。當你感到被在乎、被接住的時候，會展現出很強的安全感；反之則容易往心裡收，需要被溫柔地邀請說出來。',
+        '獅子座': '月亮落在獅子座，你需要被看見跟肯定才能安心。當你的付出被具體看見、被誠心稱讚時，情緒會明顯變得穩定，這不是愛面子，而是你天生的情感語言。',
+        '處女座': '月亮落在處女座，你習慣透過把事情整理好、掌握狀況來獲得安定感。當生活變得混亂或失控時，你容易對自己特別嚴格，這時候給自己一點喘息的空間會比逼自己更快找回效率。',
+        '天秤座': '月亮落在天秤座，你需要和諧的關係氛圍才能安心，衝突或緊繃的氣氛會讓你特別不自在。有個能一起討論、互相陪伴的人，往往比自己一個人硬撐更快讓你恢復平靜。',
+        '天蠍座': '月亮落在天蠍座，你的情感很深刻，也很重視信任。你不輕易在表面交情裡打開心房，但一旦建立起深度連結，那份情感的濃度跟忠誠度會超乎旁人想像。',
+        '射手座': '月亮落在射手座，你需要一點自由空間才能維持情緒的彈性。當你感覺被綁住或行程排得太滿時，容易感到煩躁，給自己安排一點探索或放鬆的餘裕，反而能讓你更有續航力。',
+        '摩羯座': '月亮落在摩羯座，你習慣把情緒收起來，靠掌控感跟具體的成果來獲得安全感。這讓你在壓力下顯得特別穩，但也提醒你，偶爾把情緒說出來，不會削弱你的可靠。',
+        '水瓶座': '月亮落在水瓶座，你需要一點獨立的思考空間來消化情緒，太靠近、太黏膩的相處方式反而會讓你不自在。用理性的角度先想清楚，再決定要不要說出來，是你慣用的節奏。',
+        '雙魚座': '月亮落在雙魚座，你對周遭氣氛非常敏感，很容易把別人的情緒也一起接收進來。獨處、安靜地做點讓自己放鬆的事，是你重新充電、把屬於自己的情緒跟別人的情緒分開的好方法。'
+      },
+      asc: {
+        '牡羊座': '上升落在牡羊座，你給人的第一印象是充滿朝氣、直接爽快。旁人很容易感覺到你身上的行動力，覺得你是那種一說要做就會立刻動起來的人。',
+        '金牛座': '上升落在金牛座，你給人的第一印象是穩重、讓人放心。你不急著證明什麼，這份從容感讓初次見面的人很自然地對你產生信任。',
+        '雙子座': '上升落在雙子座，你給人的第一印象是聰明、健談、反應快。你很容易讓陌生的場合變得輕鬆，也常常是聊天氣氛的帶動者。',
+        '巨蟹座': '上升落在巨蟹座，你給人的第一印象是溫暖、親切、容易親近。旁人很自然會在你面前卸下防備，覺得跟你相處很有安全感。',
+        '獅子座': '上升落在獅子座，你給人的第一印象是自信、有存在感。你走進一個場合時，常常會不自覺吸引大家的目光，這是一種天生的氣場。',
+        '處女座': '上升落在處女座，你給人的第一印象是細心、有條理、值得託付。旁人容易覺得把事情交給你會很放心，因為你給人的感覺就是靠譜。',
+        '天秤座': '上升落在天秤座，你給人的第一印象是優雅、親和、擅長社交。你很自然地讓人感到舒服，也容易成為場合裡負責串連大家的那個人。',
+        '天蠍座': '上升落在天蠍座，你給人的第一印象是深邃、有份量，讓人很難忽視。你不需要多說話，光是氣場就足以讓人感覺到你的存在感。',
+        '射手座': '上升落在射手座，你給人的第一印象是開朗、直率、充滿活力。旁人很容易被你的樂觀感染，覺得跟你相處很自在、不需要拘謹。',
+        '摩羯座': '上升落在摩羯座，你給人的第一印象是成熟、穩重、值得信賴。就算你其實還在摸索，旁人也常常會不自覺把你當成可以依靠的那一位。',
+        '水瓶座': '上升落在水瓶座，你給人的第一印象是獨特、有想法、與眾不同。你不刻意迎合，這份自在做自己的態度，反而讓人對你印象深刻。',
+        '雙魚座': '上升落在雙魚座，你給人的第一印象是溫柔、帶點夢幻感，容易讓人卸下心防。旁人常常會不自覺想跟你多聊幾句，覺得你很好親近。'
+      }
+    };
+
+    /* =========================================================
+       計算引擎（跟 original_tool.html 完全同一套，這樣兩邊算出來的
+       數字才會一致，而且送出的 JSON／文字摘要格式也能對得上）
+       ========================================================= */
+    function degToZodiac(deg) {
+      const normalized = ((deg % 360) + 360) % 360;
+      const signIndex = Math.floor(normalized / 30);
+      const degInSign = normalized % 30;
+      const degrees = Math.floor(degInSign);
+      const minutesFull = (degInSign - degrees) * 60;
+      const minutes = Math.floor(minutesFull);
+      const seconds = Math.round((minutesFull - minutes) * 60);
+      const sign = ZODIAC_SIGNS[signIndex];
+      return {
+        signIndex,
+        signName: sign.name,
+        signSymbol: sign.symbol,
+        degInSign: degrees,
+        minInSign: minutes,
+        secInSign: seconds,
+        totalDegrees: normalized,
+        formatted: `${sign.name} ${sign.symbol} ${degrees}°${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}"`
+      };
+    }
+
+    function getJulianDay(dateUT) {
+      let year = dateUT.getUTCFullYear();
+      let month = dateUT.getUTCMonth() + 1;
+      const day = dateUT.getUTCDate() +
+                  dateUT.getUTCHours() / 24 +
+                  dateUT.getUTCMinutes() / 1440 +
+                  dateUT.getUTCSeconds() / 86400;
+      if (month <= 2) { year -= 1; month += 12; }
+      const A = Math.floor(year / 100);
+      const B = 2 - A + Math.floor(A / 4);
+      return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5;
+    }
+
+    function getGMST(jd) {
+      const jd0 = Math.floor(jd - 0.5) + 0.5;
+      const T = (jd0 - 2451545.0) / 36525.0;
+      const gmst0 = 100.46061837 + 36000.7700536 * T + 0.000387933 * T * T - (T * T * T) / 38710000.0;
+      const utHours = (jd - jd0) * 24.0;
+      const gmst = gmst0 + utHours * 15.041068640;
+      return ((gmst % 360) + 360) % 360;
+    }
+
+    function getObliquity(jd) {
+      const T = (jd - 2451545.0) / 36525.0;
+      return 23.439291 - 0.0130042 * T;
+    }
+
+    function calculateAngles(jd, lat, lng) {
+      const gmst = getGMST(jd);
+      const lst = ((gmst + lng) % 360 + 360) % 360;
+      const ramc = lst;
+      const eps = getObliquity(jd) * (Math.PI / 180);
+      const latRad = lat * (Math.PI / 180);
+      const ramcRad = ramc * (Math.PI / 180);
+
+      let mcRad = Math.atan2(Math.sin(ramcRad), Math.cos(ramcRad) * Math.cos(eps));
+      let mc = mcRad * (180 / Math.PI);
+      mc = ((mc % 360) + 360) % 360;
+
+      const y = Math.cos(ramcRad);
+      const x = -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(latRad) * Math.sin(eps);
+      let ascRad = Math.atan2(y, x);
+      let asc = ascRad * (180 / Math.PI);
+      asc = ((asc % 360) + 360) % 360;
+
+      const dsc = (asc + 180) % 360;
+      const ic = (mc + 180) % 360;
+
+      return { asc, mc, dsc, ic, ramc, lstHours: lst / 15, eps: eps * (180 / Math.PI) };
+    }
+
+    function solveKepler(M, e) {
+      let E = M;
+      for (let i = 0; i < 15; i++) {
+        const deltaE = (M - (E - e * Math.sin(E))) / (1 - e * Math.cos(E));
+        E += deltaE;
+        if (Math.abs(deltaE) < 1e-7) break;
+      }
+      return E;
+    }
+
+    function getHeliocentricPos(elem, T) {
+      const a = elem.a[0] + elem.a[1] * T;
+      const e = elem.e[0] + elem.e[1] * T;
+      const I = (elem.I[0] + elem.I[1] * T) * (Math.PI / 180);
+      const L = (elem.L[0] + elem.L[1] * T) * (Math.PI / 180);
+      const wBar = (elem.wBar[0] + elem.wBar[1] * T) * (Math.PI / 180);
+      const node = (elem.node[0] + elem.node[1] * T) * (Math.PI / 180);
+
+      const w = wBar - node;
+      let M = L - wBar;
+      M = ((M % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+      const E = solveKepler(M, e);
+      const xOrb = a * (Math.cos(E) - e);
+      const yOrb = a * Math.sqrt(1 - e * e) * Math.sin(E);
+
+      const Px = Math.cos(w) * Math.cos(node) - Math.sin(w) * Math.sin(node) * Math.cos(I);
+      const Py = Math.cos(w) * Math.sin(node) + Math.sin(w) * Math.cos(node) * Math.cos(I);
+      const Pz = Math.sin(w) * Math.sin(I);
+      const Qx = -Math.sin(w) * Math.cos(node) - Math.cos(w) * Math.sin(node) * Math.cos(I);
+      const Qy = -Math.sin(w) * Math.sin(node) + Math.cos(w) * Math.cos(node) * Math.cos(I);
+      const Qz = Math.cos(w) * Math.sin(I);
+
+      const x = xOrb * Px + yOrb * Qx;
+      const y = xOrb * Py + yOrb * Qy;
+      const z = xOrb * Pz + yOrb * Qz;
+      return { x, y, z };
+    }
+
+    const CHIRON_EPHEMERIS_TABLE = [
+      { year: 1950, lon: 254.32 }, { year: 1955, lon: 295.10 }, { year: 1960, lon: 326.85 },
+      { year: 1965, lon: 350.12 }, { year: 1968, lon: 358.50 }, { year: 1970, lon: 3.20 },
+      { year: 1971, lon: 6.97 },   { year: 1972, lon: 11.05 }, { year: 1973, lon: 15.30 },
+      { year: 1975, lon: 23.10 }, { year: 1980, lon: 42.15 }, { year: 1985, lon: 68.40 },
+      { year: 1990, lon: 105.80 }, { year: 1995, lon: 170.50 }, { year: 2000, lon: 252.10 },
+      { year: 2005, lon: 298.30 }, { year: 2010, lon: 328.90 }, { year: 2015, lon: 345.80 },
+      { year: 2020, lon: 1.80 },   { year: 2025, lon: 18.50 }, { year: 2030, lon: 45.30 }
+    ];
+
+    function getChironPrecisionLongitude(jd) {
+      const decimalYear = 2000.0 + (jd - 2451545.0) / 365.25;
+      if (Math.abs(decimalYear - 1971.1) < 0.25) {
+        const dayOffset = decimalYear - 1971.1013;
+        return (6.967 + dayOffset * 8.5) % 360;
+      }
+      let idx = CHIRON_EPHEMERIS_TABLE.findIndex(p => p.year > decimalYear);
+      if (idx <= 0) idx = 1;
+      if (idx >= CHIRON_EPHEMERIS_TABLE.length) idx = CHIRON_EPHEMERIS_TABLE.length - 1;
+      const p0 = CHIRON_EPHEMERIS_TABLE[idx - 1];
+      const p1 = CHIRON_EPHEMERIS_TABLE[idx];
+      const t = (decimalYear - p0.year) / (p1.year - p0.year);
+      let l0 = p0.lon;
+      let l1 = p1.lon;
+      if (l1 < l0 && l0 - l1 > 180) l1 += 360;
+      const interpolated = l0 + t * (l1 - l0);
+      return (interpolated % 360 + 360) % 360;
+    }
+
+    function getGeocentricHighPrecision(jd) {
+      const computeAtJd = (targetJd) => {
+        const T = (targetJd - 2451545.0) / 36525.0;
+        const elements = {
+          Earth: { a: [1.00000261, 0.00000562], e: [0.01671123, -0.00004392], I: [-0.00001531, -0.01294668], L: [100.46457166, 35999.37244981], wBar: [102.93768193, 0.32327364], node: [0.0, 0.0] },
+          Mercury: { a: [0.38709893, 0.0], e: [0.20563069, 0.00002527], I: [7.00487, 0.001831], L: [252.25084, 149472.67411], wBar: [77.45645, 0.160476], node: [48.33167, -0.125340] },
+          Venus: { a: [0.72333199, 0.0], e: [0.00677323, -0.00004938], I: [3.39471, -0.000857], L: [181.97973, 58517.81538], wBar: [131.56370, 0.002683], node: [76.68069, -0.277693] },
+          Mars: { a: [1.52366231, 0.0], e: [0.09341233, 0.00011902], I: [1.85061, -0.002547], L: [355.45332, 19140.30268], wBar: [336.04084, 0.444410], node: [49.57854, -0.294985] },
+          Jupiter: { a: [5.20336301, 0.0], e: [0.04839266, -0.00012800], I: [1.30530, -0.004157], L: [34.40438, 3034.74612], wBar: [14.72847, 0.212526], node: [100.55615, 0.201720] },
+          Saturn: { a: [9.53707032, 0.0], e: [0.05415060, -0.00036762], I: [2.48446, 0.006110], L: [49.94432, 1222.49389], wBar: [92.43194, 0.541794], node: [113.71504, -0.288677] },
+          Uranus: { a: [19.19126393, 0.0], e: [0.04716771, -0.00019150], I: [0.76986, -0.000501], L: [313.23218, 428.46327], wBar: [170.96424, 0.408052], node: [74.22988, 0.042898] },
+          Neptune: { a: [30.06896348, 0.0], e: [0.00858587, 0.00002510], I: [1.76917, -0.000353], L: [304.34867, 218.45945], wBar: [44.97135, -0.164470], node: [131.78060, -0.005987] },
+          Pluto: { a: [39.48168677, 0.0], e: [0.24880766, 0.00006465], I: [17.14175, 0.003075], L: [238.92881, 145.20780], wBar: [224.06676, -0.040629], node: [110.30347, -0.011834] }
+        };
+
+        const posEarth = getHeliocentricPos(elements.Earth, T);
+        const sunLon = (Math.atan2(-posEarth.y, -posEarth.x) * (180 / Math.PI) + 360) % 360;
+
+        const getGeocentricLon = (planetKey) => {
+          const posP = getHeliocentricPos(elements[planetKey], T);
+          const dx = posP.x - posEarth.x;
+          const dy = posP.y - posEarth.y;
+          return (Math.atan2(dy, dx) * (180 / Math.PI) + 360) % 360;
+        };
+
+        let jupiterLon = getGeocentricLon('Jupiter');
+        let saturnLon = getGeocentricLon('Saturn');
+        const perturbAngle = (38.3 + 1202 * T) * (Math.PI / 180);
+        jupiterLon = (jupiterLon + 0.33 * Math.sin(perturbAngle)) % 360;
+        saturnLon = (saturnLon - 0.82 * Math.sin(perturbAngle)) % 360;
+
+        const L_moon = 218.3164477 + 481267.88123421 * T;
+        const M_sun = 357.5291092 + 35999.0502909 * T;
+        const M_moon = 134.9633964 + 477198.8675055 * T;
+        const F_moon = 93.2720950 + 483202.0175273 * T;
+        const D_moon = 297.8501921 + 445267.1114034 * T;
+
+        const mRad = M_moon * (Math.PI / 180);
+        const mSunRad = M_sun * (Math.PI / 180);
+        const fRad = F_moon * (Math.PI / 180);
+        const dRad = D_moon * (Math.PI / 180);
+
+        const moonLon = L_moon +
+          6.2886 * Math.sin(mRad) +
+          1.2740 * Math.sin(2 * dRad - mRad) +
+          0.6583 * Math.sin(2 * dRad) +
+          0.2136 * Math.sin(2 * mRad) -
+          0.1851 * Math.sin(mSunRad) -
+          0.1143 * Math.sin(2 * fRad) +
+          0.0588 * Math.sin(2 * dRad - 2 * mRad) +
+          0.0571 * Math.sin(2 * dRad - mSunRad - mRad) +
+          0.0533 * Math.sin(2 * dRad + mRad);
+
+        const nodeLon = (125.04452 - 1934.136261 * T + 0.0020708 * T * T) % 360;
+        const chironLon = getChironPrecisionLongitude(targetJd);
+
+        return {
+          Sun: sunLon,
+          Moon: ((moonLon % 360) + 360) % 360,
+          Mercury: getGeocentricLon('Mercury'),
+          Venus: getGeocentricLon('Venus'),
+          Mars: getGeocentricLon('Mars'),
+          Jupiter: jupiterLon,
+          Saturn: saturnLon,
+          Uranus: getGeocentricLon('Uranus'),
+          Neptune: getGeocentricLon('Neptune'),
+          Pluto: getGeocentricLon('Pluto'),
+          NorthNode: ((nodeLon % 360) + 360) % 360,
+          Chiron: chironLon
+        };
+      };
+
+      const posNow = computeAtJd(jd);
+      const posPrev = computeAtJd(jd - 0.01);
+
+      const rawBodiesMeta = [
+        { id: 'Sun', name: '太陽', symbol: '☉' },
+        { id: 'Moon', name: '月亮', symbol: '☽' },
+        { id: 'Mercury', name: '水星', symbol: '☿' },
+        { id: 'Venus', name: '金星', symbol: '♀' },
+        { id: 'Mars', name: '火星', symbol: '♂' },
+        { id: 'Jupiter', name: '木星', symbol: '♃' },
+        { id: 'Saturn', name: '土星', symbol: '♄' },
+        { id: 'Uranus', name: '天王星', symbol: '♅' },
+        { id: 'Neptune', name: '海王星', symbol: '♆' },
+        { id: 'Pluto', name: '冥王星', symbol: '♇' },
+        { id: 'NorthNode', name: '北交點', symbol: '☊' },
+        { id: 'Chiron', name: '凱龍星', symbol: '⚷' }
+      ];
+
+      return rawBodiesMeta.map(b => {
+        const lonNow = posNow[b.id];
+        const lonPrev = posPrev[b.id];
+        let diff = lonNow - lonPrev;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        const speed = diff / 0.01;
+        return { ...b, lon: lonNow, speed, isRetrograde: speed < 0 };
+      });
+    }
+
+    function calculateHouses(asc, mc, lat, ramc, eps, system) {
+      const cusps = new Array(12);
+      const rad = Math.PI / 180;
+      const epsRad = eps * rad;
+      const latRad = lat * rad;
+      const ic = (mc + 180) % 360;
+      const dsc = (asc + 180) % 360;
+
+      if (system === 'WholeSign') {
+        const ascSignIndex = Math.floor(asc / 30);
+        for (let i = 0; i < 12; i++) cusps[i] = ((ascSignIndex + i) % 12) * 30;
+      } else if (system === 'Equal') {
+        for (let i = 0; i < 12; i++) cusps[i] = (asc + i * 30) % 360;
+      } else {
+        // Placidus（漏斗固定用這個）
+        cusps[0] = asc; cusps[3] = ic; cusps[6] = dsc; cusps[9] = mc;
+        const calcPlacidusCusp = (offsetDeg, factor) => {
+          let lambda = (ramc + offsetDeg) % 360;
+          for (let i = 0; i < 15; i++) {
+            const lamRad = lambda * rad;
+            const sinDecl = Math.sin(epsRad) * Math.sin(lamRad);
+            const decl = Math.asin(Math.max(-0.9999, Math.min(0.9999, sinDecl)));
+            const tanLatTanDecl = Math.tan(latRad) * Math.tan(decl);
+            const clampedTan = Math.max(-0.9999, Math.min(0.9999, tanLatTanDecl));
+            const ad = Math.asin(clampedTan);
+            const raTargetRad = (ramc + offsetDeg) * rad + factor * ad;
+            let newLambdaRad = Math.atan2(Math.sin(raTargetRad), Math.cos(raTargetRad) * Math.cos(epsRad));
+            let newLambda = (newLambdaRad * (180 / Math.PI) + 360) % 360;
+            if (Math.abs(newLambda - lambda) < 0.00001) { lambda = newLambda; break; }
+            lambda = newLambda;
+          }
+          return lambda;
+        };
+        cusps[10] = calcPlacidusCusp(30, 1 / 3);
+        cusps[11] = calcPlacidusCusp(60, 2 / 3);
+        cusps[1]  = calcPlacidusCusp(120, -2 / 3);
+        cusps[2]  = calcPlacidusCusp(150, -1 / 3);
+        cusps[4] = (cusps[10] + 180) % 360;
+        cusps[5] = (cusps[11] + 180) % 360;
+        cusps[7] = (cusps[1] + 180) % 360;
+        cusps[8] = (cusps[2] + 180) % 360;
+      }
+
+      return cusps.map((deg, idx) => {
+        const zodiac = degToZodiac(deg);
+        const houseNames = ['第 1 宮 (ASC)', '第 2 宮', '第 3 宮', '第 4 宮 (IC)', '第 5 宮', '第 6 宮', '第 7 宮 (DSC)', '第 8 宮', '第 9 宮', '第 10 宮 (MC)', '第 11 宮', '第 12 宮'];
+        return { house: idx + 1, name: houseNames[idx], longitude: deg, zodiac, ruler: ZODIAC_SIGNS[zodiac.signIndex].ruler };
+      });
+    }
+
+    function determineHouse(planetLon, houseCusps) {
+      for (let i = 0; i < 12; i++) {
+        const currentCusp = houseCusps[i].longitude;
+        const nextCusp = houseCusps[(i + 1) % 12].longitude;
+        const distPlanet = (planetLon - currentCusp + 360) % 360;
+        let distNext = (nextCusp - currentCusp + 360) % 360;
+        if (distNext === 0) distNext = 360;
+        if (distPlanet >= 0 && distPlanet < distNext) return i + 1;
+      }
+      return 1;
+    }
+
+    function calculateAspects(bodies) {
+      const aspects = [];
+      for (let i = 0; i < bodies.length; i++) {
+        for (let j = i + 1; j < bodies.length; j++) {
+          const b1 = bodies[i];
+          const b2 = bodies[j];
+          let diff = Math.abs(b1.longitude - b2.longitude);
+          if (diff > 180) diff = 360 - diff;
+          for (const asp of ASPECT_TYPES) {
+            const orb = Math.abs(diff - asp.angle);
+            if (orb <= asp.orb) {
+              aspects.push({ body1: b1.name, body2: b2.name, aspectName: asp.name, symbol: asp.symbol, orb: parseFloat(orb.toFixed(2)) });
+              break;
+            }
+          }
+        }
+      }
+      return aspects.sort((a, b) => a.orb - b.orb);
+    }
+
+    // 一次算出完整星盤（跟 original_tool.html 的 chartData 是同一套邏輯）
+    function computeFullChartData(year, month, day, hour, minute, unknownTime, city, houseSystem) {
+      const h = unknownTime ? 12 : hour;
+      const m = unknownTime ? 0 : minute;
+      const utcHours = h - city.tz + m / 60;
+      const dateUT = new Date(Date.UTC(year, month - 1, day, Math.floor(utcHours), Math.round((utcHours % 1) * 60)));
+      const jd = getJulianDay(dateUT);
+
+      const angles = calculateAngles(jd, city.lat, city.lng);
+      const rawBodies = getGeocentricHighPrecision(jd);
+      const houseCusps = calculateHouses(angles.asc, angles.mc, city.lat, angles.ramc, angles.eps, houseSystem);
+
+      const processedBodies = rawBodies.map(b => {
+        const zodiac = degToZodiac(b.lon);
+        const houseNum = determineHouse(b.lon, houseCusps);
+        return { ...b, longitude: b.lon, zodiac, house: houseNum };
+      });
+
+      const angleBodies = [
+        { id: 'ASC', name: '上升點 (ASC)', longitude: angles.asc, zodiac: degToZodiac(angles.asc), house: 1 },
+        { id: 'MC', name: '中天 (MC)', longitude: angles.mc, zodiac: degToZodiac(angles.mc), house: 10 }
+      ];
+
+      const aspects = calculateAspects([...processedBodies, ...angleBodies]);
+
+      return { jd, angles, houses: houseCusps, bodies: processedBodies, aspects };
+    }
+
+    function generateTextSummary(chartData, meta) {
+      const header = `'=== 西洋占星出生盤數據摘要 ==='\n` +
+        `盤主姓名: ${meta.name || '未填寫'}\n` +
+        `出生時間: ${meta.birthDate} ${meta.unknownTime ? '12:00 (未知時間/Unknown Time)' : meta.birthTime} (UTC${meta.city.tz >= 0 ? '+' : ''}${meta.city.tz})\n` +
+        `出生地點: ${meta.city.name}, ${meta.city.country} (緯度 ${meta.city.lat.toFixed(2)}°, 經度 ${meta.city.lng.toFixed(2)}°)\n` +
+        `分宮制度: ${meta.houseSystem}\n\n`;
+
+      const anglesText = `【四軸與主要角點】\n` +
+        `上升 ASC: ${degToZodiac(chartData.angles.asc).formatted}\n` +
+        `下降 DSC: ${degToZodiac(chartData.angles.dsc).formatted}\n` +
+        `中天 MC:  ${degToZodiac(chartData.angles.mc).formatted}\n` +
+        `天底 IC:  ${degToZodiac(chartData.angles.ic).formatted}\n\n`;
+
+      const bodiesText = `【星體配置表】\n` +
+        chartData.bodies.map(b => `${b.name}: ${b.zodiac.formatted} | 第 ${b.house} 宮 ${b.isRetrograde ? '[逆行 R]' : '[順行]'}`).join('\n') + '\n\n';
+
+      const housesText = `【12 宮位宮頭表】\n` +
+        chartData.houses.map(h => `${h.name}: ${h.zodiac.formatted} (宮主星: ${h.ruler})`).join('\n') + '\n\n';
+
+      const aspectsText = `【主要相位列表】\n` +
+        chartData.aspects.map(a => `${a.body1} ${a.symbol} ${a.body2} (${a.aspectName}, 容許度: ${a.orb}°)`).join('\n');
+
+      return header + anglesText + bodiesText + housesText + aspectsText;
+    }
+
+    /* =========================================================
+       小圖示
+       ========================================================= */
+    const Icon = ({ name, className = "w-4 h-4" }) => {
+      const icons = {
+        Compass: <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeWidth="2"/><path strokeLinecap="round" strokeWidth="2" d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>,
+        Sparkles: <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>,
+        Check: <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>,
+        ArrowRight: <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 12h14m-6-6l6 6-6 6"/></svg>,
+        Clock: <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeWidth="2"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 7v5l3 3"/></svg>
+      };
+      return icons[name] || null;
+    };
+
+    /* =========================================================
+       主程式
+       ========================================================= */
+    function App() {
+      const now = new Date();
+
+      // 步驟控制：1=填生日資料　2=看個性輪廓＋填目標與Email　3=完成
+      const [step, setStep] = useState(1);
+
+      // 出生資料
+      const [name, setName] = useState('');
+      const [year, setYear] = useState(now.getFullYear() - 30);
+      const [month, setMonth] = useState(now.getMonth() + 1);
+      const [day, setDay] = useState(now.getDate());
+      const [hour, setHour] = useState(12);
+      const [minute, setMinute] = useState(0);
+      const [unknownTime, setUnknownTime] = useState(false);
+      const [selectedCity, setSelectedCity] = useState(CITY_DATABASE[0]);
+      const [citySearchInput, setCitySearchInput] = useState('新竹, Taiwan');
+      const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+
+      // 排盤結果（完整版留著，等最終送出時才會用到 houses/aspects/JSON）
+      const [chartData, setChartData] = useState(null);
+      const [result, setResult] = useState(null); // { sunSign, moonSign, ascSign }
+      const [isComputing, setIsComputing] = useState(false);
+      const [step1Error, setStep1Error] = useState('');
+
+      // 銜接表單
+      const [goal, setGoal] = useState('');
+      const [timeCommitment, setTimeCommitment] = useState('');
+      const [email, setEmail] = useState('');
+      const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
+      const [step2Error, setStep2Error] = useState('');
+
+      const dateValue = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const timeValue = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+      const handleDateChange = (e) => {
+        if (!e.target.value) return;
+        const [y, m, d] = e.target.value.split('-').map(Number);
+        if (y) setYear(y);
+        if (m) setMonth(m);
+        if (d) setDay(d);
+      };
+
+      const handleTimeChange = (e) => {
+        if (!e.target.value) return;
+        const [h, m] = e.target.value.split(':').map(Number);
+        if (h !== undefined) setHour(h);
+        if (m !== undefined) setMinute(m);
+      };
+
+      const filteredCities = useMemo(() => {
+        if (!citySearchInput.trim()) return CITY_DATABASE;
+        const q = citySearchInput.toLowerCase();
+        return CITY_DATABASE.filter(c =>
+          c.name.toLowerCase().includes(q) || c.zhName.includes(q) || c.country.toLowerCase().includes(q)
+        );
+      }, [citySearchInput]);
+
+      const selectCityItem = (city) => {
+        setSelectedCity(city);
+        setCitySearchInput(`${city.zhName}, ${city.country}`);
+        setIsCityDropdownOpen(false);
+      };
+
+      // 送資料到 Google Sheet（沿用原工具同一種寫法：no-cors POST）
+      const postToWebhook = async (payload) => {
+        if (!WEBHOOK_URL) {
+          console.warn('尚未設定 WEBHOOK_URL，這筆資料只印在 console，沒有真的送出：', payload);
+          return;
+        }
+        try {
+          await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.error('傳送到 Google Sheet 失敗：', err);
+        }
+      };
+
+      // 第一步送出：算完整命盤 → 立即顯示個性輪廓 → 同時寫進「基本輪廓」分頁（9 欄，只做流失追蹤用）
+      const handleStep1Submit = async () => {
+        setStep1Error('');
+        if (!name.trim()) { setStep1Error('請填寫姓名'); return; }
+
+        setIsComputing(true);
+        try {
+          const computed = computeFullChartData(year, month, day, hour, minute, unknownTime, selectedCity, HOUSE_SYSTEM);
+          setChartData(computed);
+
+          const sunSign = computed.bodies.find(b => b.id === 'Sun')?.zodiac.signName;
+          const moonSign = computed.bodies.find(b => b.id === 'Moon')?.zodiac.signName;
+          const ascSign = unknownTime ? null : degToZodiac(computed.angles.asc).signName;
+          setResult({ sunSign, moonSign, ascSign });
+
+          postToWebhook({
+            formType: 'chart_only',
+            timestamp: new Date().toISOString(),
+            name,
+            birthDate: dateValue,
+            birthTime: unknownTime ? '未知時間' : timeValue,
+            city: selectedCity.zhName,
+            country: selectedCity.country,
+            sunSign,
+            moonSign,
+            ascSign: ascSign || '未知（未填出生時間）'
+          });
+
+          setStep(2);
+        } finally {
+          setIsComputing(false);
+        }
+      };
+
+      // 第二步送出：目標＋時間投入＋Email → 寫進「完整名單」分頁
+      // 欄位順序對照你原本工具那份試算表表頭，後面再接漏斗新增的四欄
+      const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+      const handleStep2Submit = async () => {
+        setStep2Error('');
+        if (!goal) { setStep2Error('請選擇你想優先解決的事'); return; }
+        if (!timeCommitment) { setStep2Error('請選擇你願意投入的時間'); return; }
+        if (!isValidEmail(email)) { setStep2Error('請輸入正確格式的 Email'); return; }
+
+        setIsSubmittingFinal(true);
+        try {
+          const mcSign = unknownTime ? null : degToZodiac(chartData.angles.mc).signName;
+          const summaryText = generateTextSummary(chartData, {
+            name, birthDate: dateValue, birthTime: timeValue, unknownTime, city: selectedCity, houseSystem: HOUSE_SYSTEM
+          });
+
+          await postToWebhook({
+            formType: 'full_lead',
+            timestamp: new Date().toISOString(),
+            name,
+            birthDate: dateValue,
+            birthTime: unknownTime ? '未知時間' : timeValue,
+            city: selectedCity.zhName,
+            country: selectedCity.country,
+            latitude: selectedCity.lat,
+            longitude: selectedCity.lng,
+            timezone: selectedCity.tz,
+            houseSystem: HOUSE_SYSTEM,
+            sunSign: result.sunSign,
+            moonSign: result.moonSign,
+            ascSign: result.ascSign || '未知（未填出生時間）',
+            mcSign: mcSign || '未知（未填出生時間）',
+            summaryText,
+            jsonData: JSON.stringify(chartData),
+            goal,
+            timeCommitment,
+            email,
+            status: '待處理'
+          });
+          setStep(3);
+        } finally {
+          setIsSubmittingFinal(false);
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-[#0b0f1a] text-slate-100 font-sans antialiased">
+          <header className="border-b border-slate-800/80 bg-[#0b0f1a]/80 backdrop-blur sticky top-0 z-40">
+            <div className="max-w-3xl mx-auto px-5 h-14 flex items-center gap-2.5">
+              <div className="p-1.5 bg-indigo-600/20 text-indigo-400 rounded-lg border border-indigo-500/30">
+                <Icon name="Compass" className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold text-slate-200">阿杰博士｜免費星盤個性輪廓</span>
+            </div>
+          </header>
+
+          <main className="max-w-3xl mx-auto px-5 py-10 sm:py-16">
+
+            {/* ============ 步驟 1：生日資料表單 ============ */}
+            {step === 1 && (
+              <div className="space-y-8">
+                <div className="text-center space-y-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-50">
+                    30 秒看懂你的行動特質：上升 × 太陽 × 月亮免費解析
+                  </h1>
+                  <p className="text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
+                    這不是把你定型的標籤，而是幫你更快認識自己的參考起點。填入你的出生資料，立即看見專屬於你的個性輪廓，完全免費、不需要註冊。
+                  </p>
+                </div>
+
+                <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-7 space-y-5">
+                  <div>
+                    <label className="text-xs text-slate-400 font-medium mb-1.5 block">你的姓名 / 稱呼</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="怎麼稱呼你？"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-slate-400 font-medium mb-1.5 block">出生日期</label>
+                      <input
+                        type="date"
+                        value={dateValue}
+                        onChange={handleDateChange}
+                        style={{ colorScheme: 'dark' }}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-medium mb-1.5 flex items-center justify-between">
+                        <span>出生時間</span>
+                        <label className="flex items-center gap-1.5 text-[11px] text-slate-500 font-normal cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={unknownTime}
+                            onChange={(e) => setUnknownTime(e.target.checked)}
+                            className="rounded border-slate-700 bg-slate-950"
+                          />
+                          不知道時間
+                        </label>
+                      </label>
+                      <input
+                        type="time"
+                        value={timeValue}
+                        onChange={handleTimeChange}
+                        disabled={unknownTime}
+                        style={{ colorScheme: 'dark' }}
+                        className={`w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 disabled:opacity-40 ${unknownTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-indigo-950/40 border border-indigo-800/40 rounded-xl px-4 py-3 flex items-start gap-2.5">
+                    <Icon name="Clock" className="w-4 h-4 text-indigo-300 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-indigo-200">時間越精準，宮位與上升點的解析越具參考價值</p>
+                      <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">請盡量使用出生證明或家人確認過的時間，並精確到分鐘。不確定時請勾選「不知道出生時間」。有限但正確的資料，比完整但錯誤的結果更有價值。</p>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <label className="text-xs text-slate-400 font-medium mb-1.5 block">出生城市</label>
+                    <input
+                      type="text"
+                      value={citySearchInput}
+                      onChange={(e) => { setCitySearchInput(e.target.value); setIsCityDropdownOpen(true); }}
+                      onFocus={() => setIsCityDropdownOpen(true)}
+                      placeholder="搜尋城市"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                    />
+                    {isCityDropdownOpen && (
+                      <div className="absolute z-10 mt-1 w-full bg-slate-900 border border-slate-800 rounded-xl max-h-56 overflow-y-auto shadow-xl">
+                        {filteredCities.map(city => (
+                          <button
+                            key={city.id}
+                            onClick={() => selectCityItem(city)}
+                            className="w-full text-left px-3.5 py-2 text-sm text-slate-200 hover:bg-slate-800 flex items-center justify-between"
+                          >
+                            <span>{city.zhName} {city.name}</span>
+                            <span className="text-xs text-slate-500">{city.country}</span>
+                          </button>
+                        ))}
+                        {filteredCities.length === 0 && (
+                          <div className="px-3.5 py-2 text-sm text-slate-500">找不到符合的城市</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {step1Error && (
+                    <p className="text-xs text-rose-400">{step1Error}</p>
+                  )}
+
+                  <button
+                    onClick={handleStep1Submit}
+                    disabled={isComputing}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold rounded-xl py-3 flex items-center justify-center gap-2 transition"
+                  >
+                    {isComputing ? '正在計算你的星盤...' : '看我的個性輪廓'}
+                    {!isComputing && <Icon name="ArrowRight" className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ============ 步驟 2：個性輪廓 ＋ 銜接表單 ============ */}
+            {step === 2 && result && (
+              <div className="space-y-8">
+                <div className="bg-gradient-to-br from-indigo-950/60 to-slate-900/60 border border-indigo-800/40 rounded-2xl p-5 sm:p-7 space-y-5">
+                  <div className="flex items-center gap-2 text-indigo-300">
+                    <Icon name="Sparkles" className="w-4 h-4" />
+                    <span className="text-xs font-semibold">{name} 的個性輪廓</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl py-3">
+                      <div className="text-[11px] text-slate-500">太陽</div>
+                      <div className="text-sm font-semibold text-amber-300 mt-0.5">{result.sunSign}</div>
+                    </div>
+                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl py-3">
+                      <div className="text-[11px] text-slate-500">月亮</div>
+                      <div className="text-sm font-semibold text-sky-300 mt-0.5">{result.moonSign}</div>
+                    </div>
+                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl py-3">
+                      <div className="text-[11px] text-slate-500">上升</div>
+                      <div className="text-sm font-semibold text-emerald-300 mt-0.5">{result.ascSign || '需準確時間'}</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 text-sm text-slate-300 leading-relaxed">
+                    <p>{PERSONALITY_SNIPPETS.sun[result.sunSign]}</p>
+                    <p>{PERSONALITY_SNIPPETS.moon[result.moonSign]}</p>
+                    {result.ascSign && <p>{PERSONALITY_SNIPPETS.asc[result.ascSign]}</p>}
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-7 space-y-5">
+                  <div className="space-y-1">
+                    <h2 className="text-base font-semibold text-slate-100">
+                      看懂自己只是起點，把它變成看得到的改變，才是重點
+                    </h2>
+                    <p className="text-xs text-slate-500">告訴我們你想優先解決的事，我們會依照你的星盤特質，幫你設計一份具體可執行的行動方案。</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-slate-400 font-medium mb-1.5 block">你目前想優先解決的是？</label>
+                      <select
+                        value={goal}
+                        onChange={(e) => setGoal(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="">請選擇</option>
+                        <option value="增加收入">增加收入</option>
+                        <option value="開展副業">開展副業</option>
+                        <option value="職涯轉換">職涯轉換</option>
+                        <option value="身心平衡">身心平衡</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-medium mb-1.5 block">你每天願意投入多久？</label>
+                      <select
+                        value={timeCommitment}
+                        onChange={(e) => setTimeCommitment(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="">請選擇</option>
+                        <option value="5分鐘">5 分鐘</option>
+                        <option value="10分鐘">10 分鐘</option>
+                        <option value="15分鐘">15 分鐘</option>
+                        <option value="30分鐘以上">30 分鐘以上</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 font-medium mb-1.5 block">Email（用來接收你的專屬行動方案）</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {step2Error && (
+                    <p className="text-xs text-rose-400">{step2Error}</p>
+                  )}
+
+                  <button
+                    onClick={handleStep2Submit}
+                    disabled={isSubmittingFinal}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm font-semibold rounded-xl py-3 flex items-center justify-center gap-2 transition"
+                  >
+                    {isSubmittingFinal ? '送出中...' : '取得我的專屬行動方案'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ============ 步驟 3：完成 ============ */}
+            {step === 3 && (
+              <div className="text-center space-y-4 py-16">
+                <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                  <Icon name="Check" className="w-6 h-6 text-emerald-400" />
+                </div>
+                <h1 className="text-xl font-bold text-slate-50">收到了！你的專屬行動方案正在路上</h1>
+                <p className="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  你的專屬行動方案正在準備，我們會寄到 {email}，請留意信箱。
+                </p>
+              </div>
+            )}
+
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
