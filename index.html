@@ -564,6 +564,7 @@
       const [step1Error, setStep1Error] = useState('');
 
       // 銜接表單
+      const [referrer, setReferrer] = useState('');
       const [goal, setGoal] = useState('');
       const [timeCommitment, setTimeCommitment] = useState('');
       const [email, setEmail] = useState('');
@@ -660,6 +661,7 @@
 
       const handleStep2Submit = async () => {
         setStep2Error('');
+        if (!referrer.trim()) { setStep2Error('請輸入是誰帶你來的；若沒有，請填 0'); return; }
         if (!goal) { setStep2Error('請選擇你想優先解決的事'); return; }
         if (!timeCommitment) { setStep2Error('請選擇你願意投入的時間'); return; }
         if (!isValidEmail(email)) { setStep2Error('請輸入正確格式的 Email'); return; }
@@ -689,6 +691,7 @@
             mcSign: mcSign || '未知（未填出生時間）',
             summaryText,
             jsonData: JSON.stringify(chartData),
+            referrer: referrer.trim(),
             goal,
             timeCommitment,
             email,
@@ -882,6 +885,21 @@
                       看懂自己只是起點，把它變成看得到的改變，才是重點
                     </h2>
                     <p className="text-xs text-slate-500">告訴我們你想優先解決的事，我們會依照你的星盤特質，幫你設計一份具體可執行的行動方案。</p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 font-medium mb-1.5 block">
+                      你是誰帶來的朋友？<span className="text-rose-400">＊</span>
+                      <span className="ml-1 text-[11px] font-normal text-slate-500">若沒有，請填 0</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={referrer}
+                      onChange={(e) => setReferrer(e.target.value)}
+                      placeholder="請輸入姓名或暱稱；若沒有，請填 0"
+                      className="w-full min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
