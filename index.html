@@ -944,13 +944,19 @@
 
             {/* ============ 步驟 3：完成 ============ */}
             {step === 3 && (
-              <div className="text-center space-y-4 py-16">
+              <div className="w-full max-w-full min-w-0 overflow-hidden text-center space-y-4 px-2 sm:px-0 py-12 sm:py-16">
                 <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
                   <Icon name="Check" className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h1 className="text-xl font-bold text-slate-50">收到了！你的專屬行動方案正在路上</h1>
-                <p className="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
-                  你的專屬行動方案正在準備，我們會寄到 {email}，請留意信箱。
+                <h1 className="max-w-full text-lg sm:text-xl font-bold text-slate-50 leading-snug break-words">
+                  <span className="block sm:inline">收到了！</span>
+                  <span className="block sm:inline sm:ml-1">你的專屬行動方案正在路上</span>
+                </h1>
+                <p className="w-full max-w-sm mx-auto text-sm text-slate-400 leading-relaxed break-words">
+                  <span className="block">你的專屬行動方案正在準備，</span>
+                  <span className="block">我們會寄到</span>
+                  <span className="block max-w-full font-medium text-slate-300 break-all">{email}</span>
+                  <span className="block">請留意信箱。</span>
                 </p>
               </div>
             )}
