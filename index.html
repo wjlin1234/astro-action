@@ -21,15 +21,13 @@
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    .date-time-input { cursor: default; pointer-events: none; }
-    .date-time-input::-webkit-calendar-picker-indicator { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useMemo, useRef } = React;
+    const { useState, useMemo } = React;
 
     /* =========================================================
        設定區
@@ -555,8 +553,6 @@
       const [hour, setHour] = useState(12);
       const [minute, setMinute] = useState(0);
       const [unknownTime, setUnknownTime] = useState(false);
-      const dateInputRef = useRef(null);
-      const timeInputRef = useRef(null);
       const [selectedCity, setSelectedCity] = useState(CITY_DATABASE[0]);
       const [citySearchInput, setCitySearchInput] = useState('新竹, Taiwan');
       const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
@@ -590,12 +586,6 @@
         const [h, m] = e.target.value.split(':').map(Number);
         if (h !== undefined) setHour(h);
         if (m !== undefined) setMinute(m);
-      };
-
-      const openPicker = (inputRef) => {
-        if (inputRef.current && typeof inputRef.current.showPicker === 'function') {
-          inputRef.current.showPicker();
-        }
       };
 
       const filteredCities = useMemo(() => {
@@ -747,30 +737,28 @@
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+                    <div className="min-w-0">
                       <label className="text-xs text-slate-400 font-medium mb-1.5 block">出生日期</label>
-                      <div className="relative">
+                      <div className="relative w-full min-w-0 max-w-full overflow-hidden bg-slate-950 border border-slate-800 rounded-xl">
+                        <div className="w-full min-w-0 pl-3.5 pr-12 py-2.5 text-sm text-slate-100 truncate select-none">
+                          {dateValue}
+                        </div>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-300">
+                          <Icon name="Calendar" className="w-5 h-5" />
+                        </div>
                         <input
-                          ref={dateInputRef}
                           type="date"
                           value={dateValue}
                           onChange={handleDateChange}
                           tabIndex={-1}
-                          style={{ colorScheme: 'dark' }}
-                          className="date-time-input w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-12 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => openPicker(dateInputRef)}
                           aria-label="選擇出生日期"
-                          className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-300 hover:text-white cursor-pointer"
-                        >
-                          <Icon name="Calendar" className="w-5 h-5" />
-                        </button>
+                          style={{ colorScheme: 'dark' }}
+                          className="absolute inset-y-0 right-0 w-11 min-w-0 max-w-[44px] opacity-0 cursor-pointer"
+                        />
                       </div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="text-xs text-slate-400 font-medium mb-1.5 flex items-center justify-between">
                         <span>出生時間</span>
                         <label className="flex items-center gap-1.5 text-[11px] text-slate-500 font-normal cursor-pointer">
@@ -783,26 +771,23 @@
                           不知道時間
                         </label>
                       </label>
-                      <div className="relative">
+                      <div className={`relative w-full min-w-0 max-w-full overflow-hidden bg-slate-950 border border-slate-800 rounded-xl ${unknownTime ? 'opacity-40' : ''}`}>
+                        <div className="w-full min-w-0 pl-3.5 pr-12 py-2.5 text-sm text-slate-100 truncate select-none">
+                          {unknownTime ? '未知時間' : timeValue}
+                        </div>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-300">
+                          <Icon name="Clock" className="w-5 h-5" />
+                        </div>
                         <input
-                          ref={timeInputRef}
                           type="time"
                           value={timeValue}
                           onChange={handleTimeChange}
                           disabled={unknownTime}
                           tabIndex={-1}
-                          style={{ colorScheme: 'dark' }}
-                          className="date-time-input w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-12 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 disabled:opacity-40"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => openPicker(timeInputRef)}
-                          disabled={unknownTime}
                           aria-label="選擇出生時間"
-                          className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-300 hover:text-white cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          <Icon name="Clock" className="w-5 h-5" />
-                        </button>
+                          style={{ colorScheme: 'dark' }}
+                          className="absolute inset-y-0 right-0 w-11 min-w-0 max-w-[44px] opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
                       </div>
                     </div>
                   </div>
