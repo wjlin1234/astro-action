@@ -179,7 +179,7 @@
               <p class="text-xs text-slate-400 leading-relaxed mt-0.5">請盡量使用出生證明確認的時間。不確定時請勾選「不知道時間」。有限但正確的資料，比錯誤的結果更有價值。</p>
             </div>
             <div class="pt-2 border-t border-indigo-800/40 text-xs text-amber-200/90 leading-relaxed text-left">
-              <span>隱私承諾：所填寫之出生資料僅用於即時星盤幾何運算與個性輪廓分析，絕不作其他商業用途或對外洩漏。</span>
+              <span>隱私說明：你填寫的出生資料與 Email，將用於星盤計算、製作及寄送本次專屬行動報告，不會公開或用於未經同意的行銷用途。</span>
             </div>
           </div>
         </div>
@@ -255,6 +255,23 @@
           />
         </div>
 
+        <div>
+          <label class="text-xs text-slate-400 font-medium mb-1.5 block">
+            Email（用於寄送你的星盤報告與 7 天行動指南）<span class="text-rose-400">＊</span>
+          </label>
+          <input
+            id="inputEmail"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+          />
+          <p class="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
+            預計 1～3 個工作天內寄出，請確認信箱拼寫正確。
+          </p>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="text-xs text-slate-400 font-medium mb-1.5 block">你目前想優先解決的是？ <span class="text-rose-400">*</span></label>
@@ -290,270 +307,53 @@
           id="btnStep2Submit"
           class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-base font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2 transition cursor-pointer shadow-lg shadow-emerald-950/50"
         >
-          <span id="btnStep2Text">開始行動</span>
+          <span id="btnStep2Text">送出資料，製作我的專屬報告</span>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 12h14m-6-6l6 6-6 6"/></svg>
         </button>
       </div>
     </section>
 
-    <!-- ============ 步驟 3：開始行動引導頁（Skool 加入與教學） ============ -->
+    <!-- ============ 步驟 3：資料送出完成 ============ -->
     <section id="step3Section" class="space-y-6 hidden">
-      <!-- 登錄完成提示卡片 -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-xl">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-xl">
         <div class="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-          <svg class="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         </div>
-        <div class="space-y-1.5">
+
+        <div class="space-y-2">
           <h1 class="text-xl sm:text-2xl font-bold text-slate-50">
-            目標已鎖定！你的 7 天行動指南已在社群就緒
+            資料已成功送出！
           </h1>
-          <p class="text-sm text-slate-400">
-            哈囉 <span id="confirmedName" class="text-slate-200 font-medium"></span>，我們已依照你的星盤特質，為你準備專屬的實踐計畫：
+          <p class="text-sm text-slate-400 leading-relaxed">
+            哈囉 <span id="confirmedName" class="text-slate-200 font-medium"></span>，我們會依照你的星盤特質與目前目標，準備專屬行動報告。
           </p>
         </div>
 
-        <!-- 專屬領取說明方塊 -->
         <div class="max-w-xl mx-auto bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-4 text-left flex items-start gap-3">
           <div class="p-1 bg-indigo-500/20 text-indigo-400 rounded-md flex-shrink-0 mt-0.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8V8a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
           </div>
-          <div class="space-y-1 text-xs sm:text-sm">
-            <p class="font-semibold text-indigo-300">
-              指南領取與夥伴打卡：完整收錄於 Skool 社群內！
+          <div class="space-y-1.5 text-xs sm:text-sm">
+            <p class="font-semibold text-indigo-300">專屬行動報告準備中</p>
+            <p class="text-slate-300 leading-relaxed">
+              報告將寄送至 <span id="confirmedEmail" class="font-medium text-slate-100 break-all"></span>
             </p>
-            <p class="text-slate-300 leading-relaxed text-xs">
-              無需等待寄信，阿杰博士團隊已將專屬 7 天任務指引與交流討論區統整在社群中。請依照下方步驟加入，立即開始你的第 1 天行動！
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 核心引導區塊：加入 Skool 社群 -->
-      <div class="bg-gradient-to-br from-indigo-950/70 via-slate-900 to-slate-900 border border-indigo-700/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-        <div class="text-center sm:text-left space-y-2">
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-            立即加入專屬夥伴社群
-          </div>
-          <h2 class="text-lg sm:text-xl font-bold text-slate-100">
-            下一步：前往 Skool 社群，與大家一起展開 7 天實踐
-          </h2>
-          <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-            一個人走得快，一群人走得遠。在 Skool 社群中，我們將每天陪伴你完成行動指南、互相打氣與解惑。請依據你的情況選擇：
-          </p>
-        </div>
-
-        <!-- 雙按鈕分流 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <!-- 分流 A：已有帳號 -->
-          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4 hover:border-indigo-500/50 transition">
-            <div class="space-y-2.5">
-              <div class="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                <span>我已有 Skool 帳號</span>
-              </div>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                若你平時已有使用 Skool，點擊下方即可直接前往阿杰博士社群頁面申請加入。
-              </p>
-              <!-- 醒目入群問題提醒 -->
-              <div class="bg-amber-950/40 border border-amber-800/60 rounded-lg p-2.5 text-[11px] text-amber-200/90 leading-relaxed space-y-1">
-                <div class="font-bold flex items-center gap-1 text-amber-300">
-                  <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                  重要提醒：請務必完整回答入群問題
-                </div>
-                <p class="text-slate-300 text-[10.5px]">
-                  點擊申請後畫面會跳出 <span class="text-amber-300 font-semibold">入群問題</span>，請務必如實填寫。若未填寫或資料不符，系統將無法核對身分並開放權限，您將無法在社群領取這份專屬行動指南與報告！
-                </p>
-              </div>
-            </div>
-            <a
-              href="https://www.skool.com/revitalize-3970/about"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-indigo-900/40 text-center"
-            >
-              <span>直接進入 Skool 加入頁面</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            </a>
-          </div>
-
-          <!-- 分流 B：沒有帳號 / 需教學 -->
-          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4 hover:border-emerald-500/50 transition">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <span>我還沒有 Skool 帳號</span>
-              </div>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                第一次使用？只需 30 秒免費註冊。點擊查看簡單的加入圖文步驟教學。
-              </p>
-            </div>
-            <button
-              id="btnToggleTutorial"
-              class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition cursor-pointer text-center"
-            >
-              <span id="btnToggleTutorialText">查看新手註冊與加入教學</span>
-              <svg id="iconChevron" class="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- 展開的新手教學區塊 -->
-        <div id="tutorialBox" class="hidden bg-slate-950/90 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-4">
-          <div class="border-b border-slate-800/80 pb-3">
-            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-              <span>Skool 新手完整註冊與加入指南（4 步驟圖解）</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">
-              Skool 是一個高品質的學習社群平台，註冊過程需要驗證信箱。請跟著以下步驟操作，約 1 分鐘即可完成：
+            <p class="text-amber-200/90 font-medium">
+              預計 1～3 個工作天內寄出。
             </p>
           </div>
-
-          <div class="space-y-4 text-xs sm:text-sm text-slate-300">
-            <!-- 步驟 1 -->
-            <div class="flex gap-3.5 items-start p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <div class="w-7 h-7 rounded-full bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">1</div>
-              <div class="space-y-1.5 flex-grow">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-slate-100 text-sm">前往社群並點擊「加入」</span>
-                  <span class="text-[10px] text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">第一步</span>
-                </div>
-                <p class="text-slate-400 text-xs leading-relaxed">
-                  點擊本頁面最下方的綠色按鈕進入社群首頁後，找到並點擊右上角或畫面中央的 <span class="text-amber-300 font-medium">「Join Group」或「加入」</span> 按鈕。
-                </p>
-              </div>
-            </div>
-
-            <!-- 步驟 2 -->
-            <div class="flex gap-3.5 items-start p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <div class="w-7 h-7 rounded-full bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">2</div>
-              <div class="space-y-2.5 flex-grow">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-slate-100 text-sm">填寫基本帳戶資料（建立您的 Skool 帳戶）</span>
-                  <span class="text-[10px] text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">填寫資料</span>
-                </div>
-                <p class="text-slate-400 text-xs leading-relaxed">
-                  畫面會彈出「建立您的 Skool 帳戶」表單，請逐欄填寫：
-                </p>
-                <!-- 模擬欄位視圖 -->
-                <div class="bg-slate-950 rounded-lg p-3 border border-slate-800/80 space-y-2 text-xs">
-                  <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800 text-slate-300">
-                      <span class="text-[10px] text-slate-500 block">名字 (First Name)</span>
-                      <span class="text-slate-200">你的名字或稱呼</span>
-                    </div>
-                    <div class="bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800 text-slate-300">
-                      <span class="text-[10px] text-slate-500 block">姓氏 (Last Name)</span>
-                      <span class="text-slate-200">你的姓氏</span>
-                    </div>
-                  </div>
-                  <div class="bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800 text-slate-300">
-                    <span class="text-[10px] text-indigo-400 block">電子郵件 (Email) ★ 用於接收社群動態與驗證碼</span>
-                    <span class="text-slate-200 font-mono">you@example.com</span>
-                  </div>
-                  <div class="bg-slate-900/80 px-2.5 py-1.5 rounded border border-slate-800 text-slate-300">
-                    <span class="text-[10px] text-slate-500 block">密碼 (Password)</span>
-                    <span class="text-slate-400">•••••••• (設定並記下你的密碼)</span>
-                  </div>
-                </div>
-                <p class="text-[11px] text-slate-400 leading-relaxed">
-                  填寫完成後，點擊下方的 <span class="text-emerald-400 font-medium">「註冊」</span> 按鈕。
-                </p>
-              </div>
-            </div>
-
-            <!-- 步驟 3 -->
-            <div class="flex gap-3.5 items-start p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <div class="w-7 h-7 rounded-full bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">3</div>
-              <div class="space-y-2 flex-grow">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-slate-100 text-sm">收取 Email 驗證碼並輸入</span>
-                  <span class="text-[10px] text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">關鍵步驟</span>
-                </div>
-                <p class="text-slate-400 text-xs leading-relaxed">
-                  Skool 會立即發送一封包含 <span class="text-amber-300 font-semibold">驗證碼</span> 的信件至剛才填寫的信箱。
-                </p>
-                <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 space-y-1.5">
-                  <div class="flex items-center justify-between text-[11px]">
-                    <span class="text-slate-400">信件標題常為：<span class="text-slate-200 font-medium">Your Skool verification code</span></span>
-                    <span class="text-emerald-400 font-mono">驗證碼</span>
-                  </div>
-                  <div class="bg-slate-900 px-3 py-2 rounded border border-dashed border-slate-700 text-center font-mono text-slate-200 tracking-widest text-sm">
-                    ••••••
-                  </div>
-                </div>
-                <div class="bg-amber-950/30 border border-amber-800/40 rounded-lg p-2.5 text-[11px] text-amber-200/90 leading-relaxed">
-                  💡 <span class="font-semibold">沒收到信件？</span> 請先檢查「垃圾郵件匣」或「促銷內容匣」。若仍無收到，可在畫面點擊「重新發送」再次取得。
-                </div>
-                <p class="text-slate-400 text-xs mt-1">
-                  將驗證碼輸入後，點擊 <span class="text-emerald-400 font-medium">「下一頁」</span>。
-                </p>
-              </div>
-            </div>
-
-            <!-- 步驟 4 -->
-            <div class="flex gap-3.5 items-start p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
-              <div class="w-7 h-7 rounded-full bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">4</div>
-              <div class="space-y-2 flex-grow">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-slate-100 text-sm">回答入群問題並送出審核</span>
-                  <span class="text-[10px] text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">最後一步</span>
-                </div>
-                <p class="text-slate-400 text-xs leading-relaxed">
-                  輸入驗證碼後，畫面會彈出本社群的「入群提問」：
-                </p>
-                <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 space-y-2 text-xs">
-                  <div class="flex items-start gap-2">
-                    <span class="w-5 h-5 rounded bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0 text-[11px] font-bold">A</span>
-                    <div>
-                      <span class="text-slate-200 font-medium">回答問題：</span>
-                      <p class="text-slate-400 text-[11px] mt-0.5">請簡短回答畫面上出現的入群問題（例如稱呼、Email 或想達成的目標），協助我們確認你的身分。</p>
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-2 pt-1 border-t border-slate-800/80">
-                    <span class="w-5 h-5 rounded bg-indigo-500/20 text-indigo-300 flex items-center justify-center flex-shrink-0 text-[11px] font-bold">B</span>
-                    <div>
-                      <span class="text-slate-200 font-medium">點擊「送出申請 (Submit)」：</span>
-                      <p class="text-slate-400 text-[11px] mt-0.5">送出後畫面會顯示「等待審核中 (Pending)」，阿杰博士團隊會在 24 小時內完成審核開通。</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-lg p-2.5 text-[11px] text-emerald-200/90 leading-relaxed">
-                  🎉 <span class="font-semibold">審核通過提醒：</span>審核完成後，Skool 會發送一封「Approved」通知信至你的 Email，點擊信中連結即可正式進入討論區與夥伴們一起行動！
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-2">
-            <a
-              href="https://www.skool.com/revitalize-3970/about"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-xl py-3.5 px-4 flex items-center justify-center gap-2 transition cursor-pointer text-center shadow-lg shadow-emerald-950/40"
-            >
-              <span>了解步驟，立即前往註冊並申請加入</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            </a>
-          </div>
         </div>
 
-        <div class="text-center pt-2">
-          <button
-            id="btnBackToStep2"
-            class="text-xs text-slate-500 hover:text-slate-400 underline transition cursor-pointer"
-          >
-            ← 想調整行動目標？點此返回修改
-          </button>
-        </div>
+        <p class="max-w-xl mx-auto text-xs text-slate-500 leading-relaxed">
+          屆時請留意收件匣、促銷內容匣與垃圾郵件匣。
+        </p>
       </div>
     </section>
 
   </main>
 
   <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-    © 阿杰博士 · 免費星盤個性輪廓與行動引導
+    © 阿杰博士 · 免費星盤個性輪廓與專屬行動報告
   </footer>
 
   <script>
@@ -562,7 +362,6 @@
        ========================================================= */
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzx8WNRRooDP6DB8ZY1Amh3pfrFtc1sfEsddLCagTSfZpJg7cDh2pEAXdeYq7MaRZ6N/exec';
     const HOUSE_SYSTEM = 'Placidus';
-    const SKOOL_URL = 'https://www.skool.com/revitalize-3970/about';
 
     const ZODIAC_SIGNS = [
       { name: '牡羊座', symbol: '♈', element: '火', ruler: '火星' },
@@ -1021,6 +820,7 @@
     const descAsc = document.getElementById('descAsc');
 
     const inputReferrer = document.getElementById('inputReferrer');
+    const inputEmail = document.getElementById('inputEmail');
     const selectGoal = document.getElementById('selectGoal');
     const selectTime = document.getElementById('selectTime');
     const step2Error = document.getElementById('step2Error');
@@ -1028,11 +828,7 @@
     const btnStep2Text = document.getElementById('btnStep2Text');
 
     const confirmedName = document.getElementById('confirmedName');
-    const btnToggleTutorial = document.getElementById('btnToggleTutorial');
-    const btnToggleTutorialText = document.getElementById('btnToggleTutorialText');
-    const iconChevron = document.getElementById('iconChevron');
-    const tutorialBox = document.getElementById('tutorialBox');
-    const btnBackToStep2 = document.getElementById('btnBackToStep2');
+    const confirmedEmail = document.getElementById('confirmedEmail');
 
     // 點擊左側 icon 或框內任意處喚出原生日期/時間選擇面板
     function triggerPicker(id) {
@@ -1216,15 +1012,21 @@
       }, 100);
     });
 
-    // 第二步送出：「開始行動」
+    // 第二步送出：登錄 Email 與行動目標，建立完整名單
     btnStep2Submit.addEventListener('click', async () => {
       step2Error.classList.add('hidden');
       const refVal = inputReferrer.value.trim();
+      const emailVal = inputEmail.value.trim();
       const goalVal = selectGoal.value;
       const timeVal = selectTime.value;
 
       if (!refVal) {
         step2Error.textContent = '請輸入是誰帶你來的；若沒有，請填 0';
+        step2Error.classList.remove('hidden');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+        step2Error.textContent = '請輸入正確格式的 Email';
         step2Error.classList.remove('hidden');
         return;
       }
@@ -1274,11 +1076,12 @@
           referrer: refVal,
           goal: goalVal,
           timeCommitment: timeVal,
-          email: '於Skool社群註冊',
+          email: emailVal,
           status: '待處理'
         });
 
         confirmedName.textContent = appState.name;
+        confirmedEmail.textContent = emailVal;
 
         step2Section.classList.add('hidden');
         step3Section.classList.remove('hidden');
@@ -1286,26 +1089,10 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } finally {
         btnStep2Submit.disabled = false;
-        btnStep2Text.textContent = '開始行動';
+        btnStep2Text.textContent = '送出資料，製作我的專屬報告';
       }
     });
 
-    // 教學收合與展開
-    let isTutorialOpen = false;
-    btnToggleTutorial.addEventListener('click', () => {
-      isTutorialOpen = !isTutorialOpen;
-      tutorialBox.classList.toggle('hidden', !isTutorialOpen);
-      btnToggleTutorialText.textContent = isTutorialOpen ? '收合新手註冊教學' : '查看新手註冊與加入教學';
-      iconChevron.style.transform = isTutorialOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-    });
-
-    // 返回修改設定
-    btnBackToStep2.addEventListener('click', () => {
-      step3Section.classList.add('hidden');
-      step2Section.classList.remove('hidden');
-      stepIndicator.textContent = '步驟 2 / 3';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
   </script>
 </body>
 </html>
