@@ -272,6 +272,10 @@
           </p>
         </div>
 
+        <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3 text-xs text-sky-100 leading-relaxed">
+          送出後會產生一組「報告領取編號」。請加入 LINE 社群，並在入群審核題目填入完整編號；完成身分核對後，我們才會把報告寄到上方 Email。
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="text-xs text-slate-400 font-medium mb-1.5 block">你目前想優先解決的是？ <span class="text-rose-400">*</span></label>
@@ -307,7 +311,7 @@
           id="btnStep2Submit"
           class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-base font-semibold rounded-xl py-3.5 flex items-center justify-center gap-2 transition cursor-pointer shadow-lg shadow-emerald-950/50"
         >
-          <span id="btnStep2Text">送出資料，製作我的專屬報告</span>
+          <span id="btnStep2Text">送出資料，取得報告領取編號</span>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d="M5 12h14m-6-6l6 6-6 6"/></svg>
         </button>
       </div>
@@ -339,9 +343,33 @@
               報告將寄送至 <span id="confirmedEmail" class="font-medium text-slate-100 break-all"></span>
             </p>
             <p class="text-amber-200/90 font-medium">
-              預計 1～3 個工作天內寄出。
+              完成 LINE 身分核對後，預計 1～3 個工作天內寄出。
             </p>
           </div>
+        </div>
+
+        <div class="max-w-xl mx-auto bg-sky-500/10 border border-sky-500/30 rounded-xl p-5 text-left space-y-4">
+          <div>
+            <p class="text-xs font-semibold text-sky-200">你的報告領取編號</p>
+            <div class="mt-2 flex flex-col sm:flex-row gap-2">
+              <div id="confirmedReportCode" class="flex-1 rounded-lg bg-slate-950 border border-sky-700/60 px-4 py-3 text-center font-mono text-lg font-bold tracking-widest text-white"></div>
+              <button id="btnCopyReportCode" type="button" class="rounded-lg bg-sky-600 hover:bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition">
+                複製編號
+              </button>
+            </div>
+            <p id="copyReportCodeStatus" class="hidden mt-1.5 text-xs text-emerald-300">已複製，請到 LINE 入群審核題目貼上。</p>
+          </div>
+          <ol class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <li>複製上方完整編號。</li>
+            <li>加入指定 LINE 社群。</li>
+            <li>在入群審核題目填入完整編號，等待管理員核對。</li>
+          </ol>
+          <a id="lineCommunityLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-3 text-center text-sm font-semibold text-white transition">
+            前往 LINE 社群完成核對
+          </a>
+          <p id="lineCommunityLinkFallback" class="text-xs text-sky-100/80 leading-relaxed">
+            請使用活動提供的 LINE 社群入口加入，並在審核題目填入完整編號。
+          </p>
         </div>
 
         <p class="max-w-xl mx-auto text-xs text-slate-500 leading-relaxed">
@@ -361,6 +389,7 @@
        系統常數與設定
        ========================================================= */
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzx8WNRRooDP6DB8ZY1Amh3pfrFtc1sfEsddLCagTSfZpJg7cDh2pEAXdeYq7MaRZ6N/exec';
+    const LINE_COMMUNITY_URL = 'https://line.me/ti/g2/mr1Mx9HDkfCBzLTIGj31myOXRuZ52ahlza0mwA?utm_source=invitation&utm_medium=link_copy&utm_campaign=default';
     const HOUSE_SYSTEM = 'Placidus';
 
     const ZODIAC_SIGNS = [
@@ -793,7 +822,8 @@
       unknownTime: false,
       selectedCity: null,
       chartData: null,
-      result: null
+      result: null,
+      reportCode: ''
     };
 
     // DOM 元素引用
@@ -829,6 +859,42 @@
 
     const confirmedName = document.getElementById('confirmedName');
     const confirmedEmail = document.getElementById('confirmedEmail');
+    const confirmedReportCode = document.getElementById('confirmedReportCode');
+    const btnCopyReportCode = document.getElementById('btnCopyReportCode');
+    const copyReportCodeStatus = document.getElementById('copyReportCodeStatus');
+    const lineCommunityLink = document.getElementById('lineCommunityLink');
+    const lineCommunityLinkFallback = document.getElementById('lineCommunityLinkFallback');
+
+    if (LINE_COMMUNITY_URL) {
+      lineCommunityLink.href = LINE_COMMUNITY_URL;
+      lineCommunityLink.classList.remove('hidden');
+      lineCommunityLinkFallback.classList.add('hidden');
+    }
+
+    function generateReportCode() {
+      const alphabet = 'ABCDEFGHJKLMNPQRTUVWXYZ2346789';
+      const randomValues = new Uint32Array(8);
+      crypto.getRandomValues(randomValues);
+      return `AJ-${Array.from(randomValues, value => alphabet[value % alphabet.length]).join('')}`;
+    }
+
+    btnCopyReportCode.addEventListener('click', async () => {
+      if (!appState.reportCode) return;
+      try {
+        await navigator.clipboard.writeText(appState.reportCode);
+      } catch (err) {
+        const copyInput = document.createElement('textarea');
+        copyInput.value = appState.reportCode;
+        copyInput.style.position = 'fixed';
+        copyInput.style.opacity = '0';
+        document.body.appendChild(copyInput);
+        copyInput.select();
+        document.execCommand('copy');
+        copyInput.remove();
+      }
+      copyReportCodeStatus.classList.remove('hidden');
+      btnCopyReportCode.textContent = '已複製';
+    });
 
     // 點擊左側 icon 或框內任意處喚出原生日期/時間選擇面板
     function triggerPicker(id) {
@@ -1045,6 +1111,7 @@
       btnStep2Text.textContent = '資料登錄中...';
 
       try {
+        if (!appState.reportCode) appState.reportCode = generateReportCode();
         const mcSign = appState.unknownTime ? null : degToZodiac(appState.chartData.angles.mc).signName;
         const summaryText = generateTextSummary(appState.chartData, {
           name: appState.name,
@@ -1077,11 +1144,15 @@
           goal: goalVal,
           timeCommitment: timeVal,
           email: emailVal,
-          status: '待處理'
+          status: '待處理',
+          reportCode: appState.reportCode,
+          lineVerificationStatus: '尚未申請',
+          lineNickname: ''
         });
 
         confirmedName.textContent = appState.name;
         confirmedEmail.textContent = emailVal;
+        confirmedReportCode.textContent = appState.reportCode;
 
         step2Section.classList.add('hidden');
         step3Section.classList.remove('hidden');
@@ -1089,7 +1160,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } finally {
         btnStep2Submit.disabled = false;
-        btnStep2Text.textContent = '送出資料，製作我的專屬報告';
+        btnStep2Text.textContent = '送出資料，取得報告領取編號';
       }
     });
 
