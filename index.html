@@ -426,7 +426,7 @@
             <li>加入指定 LINE 社群。</li>
             <li>在入群審核題目填入完整編號，等待管理員核對。</li>
           </ol>
-          <a id="lineCommunityLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-3 text-center text-sm font-semibold text-white transition">
+          <a id="lineCommunityLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full min-h-12 items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-3 text-center text-sm font-semibold leading-relaxed text-white transition">
             前往 LINE 社群完成核對
           </a>
           <p id="lineCommunityLinkFallback" class="text-xs text-sky-100/80 leading-relaxed">
@@ -930,6 +930,7 @@
     if (LINE_COMMUNITY_URL) {
       lineCommunityLink.href = LINE_COMMUNITY_URL;
       lineCommunityLink.classList.remove('hidden');
+      lineCommunityLink.classList.add('flex');
       lineCommunityLinkFallback.classList.add('hidden');
     }
 
