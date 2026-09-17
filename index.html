@@ -7,6 +7,13 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
     body {
       background-color: #0b0f1a;
       color: #f1f5f9;
@@ -37,6 +44,61 @@
       height: 100%;
       opacity: 0;
       cursor: pointer;
+    }
+
+    /* 第二步表單：提升深色模式對比，並避免 iOS 的 select 依最長選項撐破版面 */
+    .step2-field {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      background-color: rgba(30, 41, 59, 0.82);
+      border: 1px solid #64748b;
+      color: #f8fafc;
+      box-shadow: inset 0 1px 2px rgba(2, 6, 23, 0.35);
+    }
+    .step2-field::placeholder {
+      color: #94a3b8;
+      opacity: 1;
+    }
+    .step2-field:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+    }
+    .step2-select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      padding-right: 2.75rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      background-size: 1rem;
+      color-scheme: dark;
+    }
+    .step2-select option {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    @media (max-width: 639px) {
+      main {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)) !important;
+      }
+      #step2Section,
+      #step2Section > div,
+      #step2Section .step2-field-wrap {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+      #step2Section h2,
+      #step2Section p,
+      #step2Section label {
+        overflow-wrap: anywhere;
+      }
     }
   </style>
 </head>
@@ -228,7 +290,7 @@
       </div>
 
       <!-- 銜接表單 -->
-      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="bg-slate-900/70 border border-slate-700 rounded-2xl p-5 sm:p-7 space-y-5 shadow-xl w-full min-w-0 max-w-full overflow-hidden">
         <div class="space-y-1.5">
           <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -242,46 +304,25 @@
           </p>
         </div>
 
-        <div>
-          <label class="text-xs text-slate-400 font-medium mb-1.5 block">
+        <div class="step2-field-wrap">
+          <label class="text-xs text-slate-300 font-medium mb-1.5 block">
             你是誰帶來的朋友？<span class="text-rose-400">＊</span>
-            <span class="ml-1 text-[11px] font-normal text-slate-500">若沒有，請填 0</span>
+            <span class="ml-1 text-[11px] font-normal text-slate-400">若沒有，請填 0</span>
           </label>
           <input
             id="inputReferrer"
             type="text"
             placeholder="請輸入姓名或暱稱；若沒有，請填 0"
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+            class="step2-field rounded-xl px-3.5 py-3 text-sm"
           />
         </div>
 
-        <div>
-          <label class="text-xs text-slate-400 font-medium mb-1.5 block">
-            Email（用於寄送你的星盤報告與 7 天行動指南）<span class="text-rose-400">＊</span>
-          </label>
-          <input
-            id="inputEmail"
-            type="email"
-            inputmode="email"
-            autocomplete="email"
-            placeholder="you@example.com"
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
-          />
-          <p class="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
-            預計 1～3 個工作天內寄出，請確認信箱拼寫正確。
-          </p>
-        </div>
-
-        <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3 text-xs text-sky-100 leading-relaxed">
-          送出後會產生一組「報告領取編號」。請加入 LINE 社群，並在入群審核題目填入完整編號；完成身分核對後，我們才會把報告寄到上方 Email。
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs text-slate-400 font-medium mb-1.5 block">你目前想優先解決的是？ <span class="text-rose-400">*</span></label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0 max-w-full">
+          <div class="step2-field-wrap">
+            <label class="text-xs text-slate-300 font-medium mb-1.5 block">你目前想優先解決的是？ <span class="text-rose-400">*</span></label>
             <select
               id="selectGoal"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+              class="step2-field step2-select rounded-xl px-3.5 py-3 text-sm"
             >
               <option value="">請選擇</option>
               <option value="收入成長（想靠習慣建立穩定/額外收入）">收入成長（想靠習慣建立穩定/額外收入）</option>
@@ -290,11 +331,11 @@
               <option value="身心與行動力（想先穩住身心，才有力氣執行致富習慣）">身心與行動力（想先穩住身心，才有力氣執行致富習慣）</option>
             </select>
           </div>
-          <div>
-            <label class="text-xs text-slate-400 font-medium mb-1.5 block">你每天願意投入多久？ <span class="text-rose-400">*</span></label>
+          <div class="step2-field-wrap">
+            <label class="text-xs text-slate-300 font-medium mb-1.5 block">你每天願意投入多久？ <span class="text-rose-400">*</span></label>
             <select
               id="selectTime"
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+              class="step2-field step2-select rounded-xl px-3.5 py-3 text-sm"
             >
               <option value="">請選擇</option>
               <option value="5分鐘">5 分鐘</option>
@@ -303,6 +344,27 @@
               <option value="30分鐘以上">30 分鐘以上</option>
             </select>
           </div>
+        </div>
+
+        <div class="step2-field-wrap">
+          <label class="text-xs text-slate-300 font-medium mb-1.5 block">
+            Email（用於寄送你的星盤報告與 7 天行動指南）<span class="text-rose-400">＊</span>
+          </label>
+          <input
+            id="inputEmail"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="step2-field rounded-xl px-3.5 py-3 text-sm"
+          />
+          <p class="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+            預計 1～3 個工作天內寄出，請確認信箱拼寫正確。
+          </p>
+        </div>
+
+        <div class="w-full min-w-0 max-w-full bg-sky-500/10 border border-sky-500/40 rounded-xl px-4 py-3 text-xs text-sky-100 leading-relaxed">
+          送出後會產生一組「報告領取編號」。請加入 LINE 社群，並在入群審核題目填入完整編號；完成身分核對後，我們才會把報告寄到上方 Email。
         </div>
 
         <div id="step2Error" class="hidden text-xs text-rose-400 font-medium"></div>
